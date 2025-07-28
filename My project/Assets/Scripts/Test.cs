@@ -49,6 +49,8 @@ public class Test : MonoBehaviour
         clip.GetData(samples, 0);
         bytes = EncodeAsWav(samples, clip.frequency, clip.channels);
         recording = false;
+
+        SendRecording();
     }
 
     private void SendRecording()
