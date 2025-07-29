@@ -12,6 +12,7 @@ namespace HuggingFace.API.Examples
         [SerializeField] private Button startButton;
         [SerializeField] private Button stopButton;
         [SerializeField] private TextMeshProUGUI text;
+        [SerializeField] private string Key;
         public System.Action<string> OnSpeechRecognized;
 
         private AudioClip clip;
@@ -97,7 +98,7 @@ namespace HuggingFace.API.Examples
             stopButton.interactable = false;
 
             string url = "https://api-inference.huggingface.co/models/openai/whisper-large-v3";
-            string token = "Bearer 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"; // << Bearer 남겨둬야함 꼭, 그 후 API 키 복붙 ㄱ
+            string token = "Bearer "+Key; // << Bearer 남겨둬야함 꼭, 그 후 API 키 복붙 ㄱ
 
             UnityWebRequest request = new UnityWebRequest(url, "POST");
             request.uploadHandler = new UploadHandlerRaw(audioData);
