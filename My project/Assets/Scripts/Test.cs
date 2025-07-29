@@ -1,6 +1,8 @@
+using System.Collections;
 using System.IO;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace HuggingFace.API.Examples
@@ -12,10 +14,12 @@ namespace HuggingFace.API.Examples
         [SerializeField] private TextMeshProUGUI text;
         public System.Action<string> OnSpeechRecognized;
 
-
         private AudioClip clip;
         private byte[] bytes;
         private bool recording;
+
+        private const int sampleRate = 44100;
+        private const int maxDuration = 10;
 
         private void Start()
         {
@@ -51,7 +55,7 @@ namespace HuggingFace.API.Examples
             startButton.interactable = false;
             stopButton.interactable = true;
 
-            clip = Microphone.Start(null, false, 10, 44100);
+            clip = Microphone.Start(null, false, maxDuration, sampleRate);
             if (clip == null)
             {
                 Debug.LogError("Microphone.Start returned null.");
@@ -62,14 +66,14 @@ namespace HuggingFace.API.Examples
             recording = true;
         }
 
-
         private void StopRecording()
         {
-            var position = Microphone.GetPosition(null);
+            int position = Microphone.GetPosition(null);
             Microphone.End(null);
 
-            if (position <= 0)
+            if (position <= 0 || clip == null)
             {
+                Debug.LogWarning("녹음된 길이가 너무 짧거나 클립이 유효하지 않음.");
                 text.color = Color.red;
                 text.text = "녹음 데이터가 없습니다.";
                 startButton.interactable = true;
@@ -77,37 +81,54 @@ namespace HuggingFace.API.Examples
                 return;
             }
 
-            var samples = new float[position];
+            float[] samples = new float[position * clip.channels];
             clip.GetData(samples, 0);
+
             bytes = EncodeAsWAV(samples, clip.frequency, clip.channels);
             recording = false;
-            SendRecording();
+
+            StartCoroutine(SendToHuggingFace(bytes));
         }
 
-        private void SendRecording()
+        private IEnumerator SendToHuggingFace(byte[] audioData)
         {
             text.color = Color.yellow;
             text.text = "Sending...";
             stopButton.interactable = false;
 
-            HuggingFaceAPI.AutomaticSpeechRecognition(bytes, response => {
-                text.color = Color.white;
+            string url = "https://api-inference.huggingface.co/models/openai/whisper-large-v3";
+            string token = "Bearer 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"; // << Bearer 남겨둬야함 꼭, 그 후 API 키 복붙 ㄱ
 
-                string safeResponse = response.Replace("<", "&lt;").Replace(">", "&gt;");
-                text.text = safeResponse;
+            UnityWebRequest request = new UnityWebRequest(url, "POST");
+            request.uploadHandler = new UploadHandlerRaw(audioData);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", token);
+            request.SetRequestHeader("Content-Type", "audio/wav");
 
-                // 챗봇 커넥터에게 전달
-                OnSpeechRecognized?.Invoke(response);
+            yield return request.SendWebRequest();
 
-                startButton.interactable = true;
-            }, error => {
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"HuggingFace API error: {request.error}");
                 text.color = Color.red;
-                text.text = error;
-                startButton.interactable = true;
-            });
+                text.text = $"에러 발생: {request.error}";
+            }
+            else
+            {
+                string responseText = request.downloadHandler.text;
+                Debug.Log("API Raw Response: " + responseText);
 
+                WhisperResponse result = JsonUtility.FromJson<WhisperResponse>(responseText);
+                string recognizedText = result.text?.Trim();
+
+                text.color = Color.white;
+                text.text = recognizedText;
+
+                OnSpeechRecognized?.Invoke(recognizedText);
+            }
+
+            startButton.interactable = true;
         }
-
 
         private byte[] EncodeAsWAV(float[] samples, int frequency, int channels)
         {
@@ -115,6 +136,8 @@ namespace HuggingFace.API.Examples
             {
                 using (var writer = new BinaryWriter(memoryStream))
                 {
+                    int byteRate = frequency * channels * 2;
+
                     writer.Write("RIFF".ToCharArray());
                     writer.Write(36 + samples.Length * 2);
                     writer.Write("WAVE".ToCharArray());
@@ -123,19 +146,27 @@ namespace HuggingFace.API.Examples
                     writer.Write((ushort)1);
                     writer.Write((ushort)channels);
                     writer.Write(frequency);
-                    writer.Write(frequency * channels * 2);
+                    writer.Write(byteRate);
                     writer.Write((ushort)(channels * 2));
                     writer.Write((ushort)16);
                     writer.Write("data".ToCharArray());
                     writer.Write(samples.Length * 2);
 
-                    foreach (var sample in samples)
+                    foreach (float sample in samples)
                     {
-                        writer.Write((short)(sample * short.MaxValue));
+                        short intSample = (short)(Mathf.Clamp(sample, -1f, 1f) * short.MaxValue);
+                        writer.Write(intSample);
                     }
                 }
+
                 return memoryStream.ToArray();
             }
+        }
+
+        [System.Serializable]
+        public class WhisperResponse
+        {
+            public string text;
         }
     }
 }
