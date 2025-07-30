@@ -1304,7 +1304,7 @@ MonoBehaviour:
   startButton: {fileID: 1483952561}
   stopButton: {fileID: 239789226}
   text: {fileID: 410834552}
-  Key: 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
+  Key: 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
 --- !u!114 &1638478118
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1317,7 +1317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a1ded0a72fa6d04697bcfee6aa3cea8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  huggingFaceApiKey: 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
+  huggingFaceApiKey: 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
   characterController: {fileID: 978372831}
 --- !u!114 &1638478119
 MonoBehaviour:
