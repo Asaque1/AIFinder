@@ -9,10 +9,17 @@ namespace HuggingFace.API.Examples
 {
     public class Test : MonoBehaviour
     {
+        [Header("버튼 연결")]
         [SerializeField] private Button startButton;
         [SerializeField] private Button stopButton;
-        [SerializeField] private TextMeshProUGUI text;
+        [SerializeField] private Button sendButton;
+
+        [Header("UI 연결")]
+        [SerializeField] private TMP_InputField inputField;
+
+        [Header("HuggingFace API 키")]
         [SerializeField] private string Key;
+
         public System.Action<string> OnSpeechRecognized;
 
         private AudioClip clip;
@@ -26,7 +33,19 @@ namespace HuggingFace.API.Examples
         {
             startButton.onClick.AddListener(StartRecording);
             stopButton.onClick.AddListener(StopRecording);
+            sendButton.onClick.AddListener(OnSendButtonClicked);
+
+            // ?? 텍스트 변경 이벤트 등록
+            inputField.onValueChanged.AddListener(OnInputFieldChanged);
+
             stopButton.interactable = false;
+            sendButton.interactable = false;
+        }
+
+        private void OnInputFieldChanged(string input)
+        {
+            // 입력 필드에 텍스트가 존재하면 전송 버튼 활성화
+            sendButton.interactable = !string.IsNullOrWhiteSpace(input);
         }
 
         private void Update()
@@ -44,23 +63,23 @@ namespace HuggingFace.API.Examples
             if (Microphone.devices.Length == 0)
             {
                 Debug.LogError("No microphone devices found.");
-                text.text = "마이크 장치가 없습니다.";
+                inputField.text = "마이크 장치가 없습니다.";
                 return;
             }
 
             foreach (var device in Microphone.devices)
                 Debug.Log("Detected mic: " + device);
 
-            text.color = Color.white;
-            text.text = "Recording...";
+            inputField.text = "녹음 중...";
             startButton.interactable = false;
             stopButton.interactable = true;
+            sendButton.interactable = false;
 
             clip = Microphone.Start(null, false, maxDuration, sampleRate);
             if (clip == null)
             {
                 Debug.LogError("Microphone.Start returned null.");
-                text.text = "녹음 실패: 마이크 시작 불가";
+                inputField.text = "녹음 실패: 마이크 시작 불가";
                 return;
             }
 
@@ -75,8 +94,7 @@ namespace HuggingFace.API.Examples
             if (position <= 0 || clip == null)
             {
                 Debug.LogWarning("녹음된 길이가 너무 짧거나 클립이 유효하지 않음.");
-                text.color = Color.red;
-                text.text = "녹음 데이터가 없습니다.";
+                inputField.text = "녹음 데이터가 없습니다.";
                 startButton.interactable = true;
                 stopButton.interactable = false;
                 return;
@@ -93,12 +111,11 @@ namespace HuggingFace.API.Examples
 
         private IEnumerator SendToHuggingFace(byte[] audioData)
         {
-            text.color = Color.yellow;
-            text.text = "Sending...";
+            inputField.text = "인식 중...";
             stopButton.interactable = false;
 
             string url = "https://api-inference.huggingface.co/models/openai/whisper-large-v3";
-            string token = "Bearer "+Key; // << Bearer 남겨둬야함 꼭, 그 후 API 키 복붙 ㄱ
+            string token = "Bearer " + Key; // Bearer 옆 띄어쓰기 없애면 진짜 엄마 찢음
 
             UnityWebRequest request = new UnityWebRequest(url, "POST");
             request.uploadHandler = new UploadHandlerRaw(audioData);
@@ -111,8 +128,7 @@ namespace HuggingFace.API.Examples
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"HuggingFace API error: {request.error}");
-                text.color = Color.red;
-                text.text = $"에러 발생: {request.error}";
+                inputField.text = $"에러 발생: {request.error}";
             }
             else
             {
@@ -122,13 +138,21 @@ namespace HuggingFace.API.Examples
                 WhisperResponse result = JsonUtility.FromJson<WhisperResponse>(responseText);
                 string recognizedText = result.text?.Trim();
 
-                text.color = Color.white;
-                text.text = recognizedText;
-
-                OnSpeechRecognized?.Invoke(recognizedText);
+                inputField.text = recognizedText;
+                sendButton.interactable = !string.IsNullOrWhiteSpace(recognizedText); // 텍스트 있으면 버튼 활성화
             }
 
             startButton.interactable = true;
+        }
+
+        private void OnSendButtonClicked()
+        {
+            string finalText = inputField.text;
+            if (!string.IsNullOrWhiteSpace(finalText))
+            {
+                OnSpeechRecognized?.Invoke(finalText); // AI 명령 실행
+                sendButton.interactable = false; // 중복 방지
+            }
         }
 
         private byte[] EncodeAsWAV(float[] samples, int frequency, int channels)
