@@ -1,7 +1,11 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class dust : MonoBehaviour
 {
+    [SerializeField]
+    UnityEvent clearEvent;
+
     public float broomDetectionRadius = 3f;   // Broom 감지 반경
     public LayerMask broomLayer;             // Broom이 속한 레이어
     public float requiredTime = 3f;          // 제거되기까지 필요한 시간
@@ -38,6 +42,7 @@ public class dust : MonoBehaviour
         isCleared = true;
         Debug.Log("Dust cleared after Broom stayed nearby for " + requiredTime + " seconds.");
         Destroy(gameObject);
+        clearEvent.Invoke();
     }
 
     // 디버깅용: 감지 범위 시각화
