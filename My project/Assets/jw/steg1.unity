@@ -1201,54 +1201,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 83a2248a417832840ad925f330abf2f1, type: 3}
---- !u!1 &981225590 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 806514905164976493, guid: ee4cda7b7f0a6a9409cde75ed99e4773, type: 3}
-  m_PrefabInstance: {fileID: 1478722793}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &981225592
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 981225590}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9eea17a0030640d4cb2562f418315865, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  openevent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 347454506}
-        m_TargetAssemblyTypeName: door, Assembly-CSharp
-        m_MethodName: OnOpen
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  closeevent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 347454506}
-        m_TargetAssemblyTypeName: door, Assembly-CSharp
-        m_MethodName: OnClose
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  isPressed: 0
 --- !u!1001 &1013296886
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1447,6 +1399,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5884845318520729339, guid: ee4cda7b7f0a6a9409cde75ed99e4773, type: 3}
+      propertyPath: openevent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 347454506}
+    - target: {fileID: 5884845318520729339, guid: ee4cda7b7f0a6a9409cde75ed99e4773, type: 3}
+      propertyPath: closeevent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 347454506}
     - target: {fileID: 6996235968923705871, guid: ee4cda7b7f0a6a9409cde75ed99e4773, type: 3}
       propertyPath: m_LocalPosition.x
       value: -32.31
@@ -1494,10 +1454,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 806514905164976493, guid: ee4cda7b7f0a6a9409cde75ed99e4773, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 981225592}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ee4cda7b7f0a6a9409cde75ed99e4773, type: 3}
 --- !u!1001 &1637974495
 PrefabInstance:

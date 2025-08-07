@@ -4,7 +4,7 @@ using UnityEngine.Events;
 public class fog : MonoBehaviour
 {
     [SerializeField]
-    UnityEvent airpurifieron;
+    private UnityEvent airpurifieron;
 
     private ParticleSystem[] particleSystem;
 
@@ -23,7 +23,7 @@ public class fog : MonoBehaviour
     }
 
     [ContextMenu("ÆÄÆ¼Å¬")]
-    void stopParticle()
+    public void stopParticle()
     {
         if(airpurifieron != null)
         {
