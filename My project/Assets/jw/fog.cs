@@ -7,10 +7,12 @@ public class fog : MonoBehaviour
     private UnityEvent airpurifieron;
 
     private ParticleSystem[] particleSystem;
+    private Collider fogCollider;
 
     void Start()
     {
         particleSystem = GetComponentsInChildren<ParticleSystem>();
+        fogCollider = GetComponent<Collider>();
 
         // 메인 모듈 가져오기
         var main = particleSystem[0].main;
@@ -20,6 +22,9 @@ public class fog : MonoBehaviour
         {
             particle.Play();
         }
+
+        if (fogCollider != null)
+            fogCollider.enabled = true;
     }
 
     [ContextMenu("파티클")]
@@ -32,5 +37,8 @@ public class fog : MonoBehaviour
                 particle.Stop();
             }
         }
+
+        if (fogCollider != null)
+            fogCollider.enabled = false;
     }
 }
